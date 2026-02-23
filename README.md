@@ -11,8 +11,8 @@ Enter any stock ticker (e.g. AAPL, MSFT, TSLA) and the pipeline automatically pr
 Three agents orchestrated by LangGraph:
 
 1. **Research Agent** — fetches live financial data (yfinance) and recent news (NewsAPI)
-2. **RAG Agent** — retrieves relevant excerpts from 10-K filings using ChromaDB vector search
-3. **Report Agent** — synthesises all data using Claude Haiku to draft a structured credit assessment
+2. **RAG Agent** — automatically downloads the company's SEC 10-K filing, chunks and embeds it into ChromaDB, then retrieves relevant excerpts at query time. Gracefully skips if no filing is available.
+3. **Report Agent** — synthesises all data using Claude Haiku (Anthropic) to draft a structured credit assessment
 
 ## Tech Stack
 
@@ -21,7 +21,7 @@ Three agents orchestrated by LangGraph:
 - **Vector Database:** ChromaDB
 - **Embeddings:** ChromaDB built-in (all-MiniLM-L6-v2)
 - **Frontend:** Streamlit
-- **Data Sources:** yfinance, NewsAPI, SEC 10-K filings
+- **Data Sources:** yfinance, NewsAPI, SEC EDGAR API
 
 ## Setup
 
@@ -42,17 +42,13 @@ ANTHROPIC_API_KEY=your_key
 NEWS_API_KEY=your_key
 ```
 
-3. Add a 10-K PDF named `apple_10k.pdf` to the project root and build the vector store:
-
-```bash
-python3 rag.py
-```
-
-4. Run the app:
+3. Run the app:
 
 ```bash
 streamlit run app.py
 ```
+
+The pipeline will automatically download and index the SEC 10-K filing for any ticker you enter.
 
 ## CI/CD
 
