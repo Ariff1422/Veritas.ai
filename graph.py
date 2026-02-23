@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 from langchain_anthropic import ChatAnthropic
 from typing import TypedDict
+from datetime import date
 from rag import get_retriever
 
 load_dotenv()
@@ -58,19 +59,25 @@ def research_node(state: State) -> dict:
 
 def rag_node(state: State) -> dict:
     ticker = state["ticker"]
-
     query = f"{ticker} risk factors financial performance debt revenue"
-    chunks = get_retriever(query, n_results=5)
-    rag_context = "\n\n".join(chunks)
-
+    chunks = get_retriever(query, ticker=ticker, n_results=5)
+    
+    if not chunks:
+        rag_context = "No 10-K filing available for this company."
+    else:
+        rag_context = "\n\n".join(chunks)
+    
     print("✓ RAG node complete")
     return {"rag_context": rag_context}
 
 # ---- NODE 3: REPORT ----
 
 def report_node(state: State) -> dict:
+    today = date.today().strftime("%B %d, %Y")
+    
     prompt = f"""
     You are a senior credit analyst. Using the data below, write a structured credit assessment report.
+    Today's date is {today}. Use this as the report date.
 
     ## Live Financial Data
     {state["financial_data"]}
@@ -111,7 +118,7 @@ graph = builder.compile()
 
 if __name__ == "__main__":
     result = graph.invoke({
-        "ticker": "AAPL",
+        "ticker": "MSFT",
         "financial_data": "",
         "news_data": "",
         "rag_context": "",
