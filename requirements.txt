@@ -12,3 +12,4 @@ requests
 python-dotenv
 pypdf
 numpy<2
+sec-edgar-downloader
